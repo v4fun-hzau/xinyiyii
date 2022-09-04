@@ -1,0 +1,136 @@
+--- 
+title: "中文书籍的 bookdown 模版"
+author: "黄湘云"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+papersize: a4
+fontsize: 10pt
+graphics: yes
+mathspec: yes
+colorlinks: yes
+toccolor: FireBrick
+lot: yes
+lof: yes
+geometry:
+  - tmargin=2.5cm
+  - bmargin=2.5cm
+  - lmargin=3.0cm
+  - rmargin=2.0cm
+classoption: "UTF8,twoside,openany,table"
+bibliography: 
+ - book.bib
+ - packages.bib
+biblio-style: apalike
+csl: computational-statistics.csl
+hyperrefoptions:
+  - linktoc=all
+  - pdfstartview=FitH
+  - bookmarksnumbered=true
+keywords: 
+  - R 语言
+  - 数据科学
+link-citations: yes
+# cover-image: path to the social sharing image like images/cover.jpg
+description: |
+  这是一个简单的中文书籍模版，顺便介绍了如何使用中英文字体，参考文献样式等。
+---
+
+\mainmatter
+
+# 欢迎 {#welcome .unnumbered}
+\chaptermark{欢迎}
+\index{bookdown}
+
+::: {.rmdtip data-latex="{提示}"}
+这是中文书籍模版，源文件的编译和组织使用 **knitr** [@xie2015] 和 **bookdown** [@xie2016]，参考文献的样式文件来自 [Zotero](https://www.zotero.org/styles)。
+:::
+
+## 设置字体 {#setup-fonts}
+
+系统上安装 Noto 系列的四款字体，依次是英文衬线字体，英文无衬线字体，简体中文宋体，简体中文黑体，其中，两款英文字体包含正常、粗体、斜体、粗斜体四种字型。
+
+```bash
+brew install --cask font-noto-serif font-noto-sans
+brew install --cask font-noto-serif-cjk-sc font-noto-sans-cjk-sc
+```
+
+安装后，需要先调用 **sysfonts** 包注册字体到 R 环境，以便绘图时使用。
+
+```{r register-fonts, eval=FALSE}
+sysfonts::font_add(
+  family = "Noto Serif",
+  regular = "NotoSerif-Regular.ttf",
+  bold = "NotoSerif-Bold.ttf",
+  italic = "NotoSerif-Italic.ttf",
+  bolditalic = "NotoSerif-BoldItalic.ttf"
+)
+sysfonts::font_add(
+  family = "Noto Serif CJK SC",
+  regular = "NotoSerifCJKsc-Regular.otf",
+  bold = "NotoSerifCJKsc-Bold.otf"
+)
+```
+
+**showtext** 包调用系统安装的中英文字体，如图 \@ref(fig:quakes) 所示，横纵坐标轴标题使用黑体，主标题黑体加粗，边空文本是宋体，图内注释也是宋体，坐标轴刻度值用无衬线字体。
+
+```{r}
+#| quakes,
+#| echo=FALSE,
+#| fig.align='center',
+#| fig.showtext=TRUE,
+#| fig.width=5, fig.height=5,
+#| out.width="75%",
+#| fig.cap="斐济是一个太平洋上的岛国",
+#| fig.alt="太平洋地震带"
+
+colorize_numeric <- function(x) {
+  n <- 9 # 设置颜色梯度数目
+  scales::col_numeric(palette = "viridis", domain = range(x))(x)
+}
+quakes <- transform(quakes, color = colorize_numeric(mag))
+# 绘图
+plot(data = quakes, lat ~ long, col = color, ann = FALSE, family = "Noto Sans")
+title(xlab = "经度", ylab = "纬度", main = "地震带", family = "Noto Sans CJK SC")
+text(x = 176, y = -25, labels = "4.9 级", pos = 1, family = "Noto Sans Mono CJK SC")
+points(x = 174.21, y = -21.14, pch = 3, lwd = 2, cex = 1, col = "Orange")
+arrows(
+  x0 = 176, y0 = -25, x1 = 174.21, y1 = -21.14,
+  length = 0.15, angle = 15
+)
+mtext(text = "斐济位于环太平洋火山地震带", side = 3, family = "Noto Serif CJK SC")
+```
+
+
+
+## 安装 R 包 {#install-packages}
+
+本书使用 [Bootstrap](https://getbootstrap.com/) 样式主题，因此，除了 **bookdown** 外，需要安装额外的三个 R 包：
+
+```{r eval=FALSE}
+install.packages(c("downlit", "bslib", "xml2"))
+```
+
+另外，为了处理中文字体，需要安装 **showtext** 包：
+
+```{r eval=FALSE}
+install.packages("showtext")
+```
+
+编译本书 R Markdown 源文件的过程中，使用的 R 包和软件信息如下：
+
+```{r}
+xfun::session_info(packages = c(
+  "knitr", "rmarkdown", "bookdown",
+  "showtext", "sysfonts"
+))
+```
+
+
+
+```{r include=FALSE, cache=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'packages.bib')
+```
